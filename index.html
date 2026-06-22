@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cybersecurity Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;500&family=Orbitron:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:      #050A0E;
+      --surface:    #0C1419;
+      --surface2:   #111D24;
+      --border:     #1A2E22;
+      --green:      #39FF14;
+      --green-dim:  #1A8A00;
+      --green-glow: rgba(57, 255, 20, 0.12);
+      --green-faint:rgba(57, 255, 20, 0.05);
+      --body-text:  #C8D8C5;
+      --muted:      #557049;
+      --font-mono:  'Share Tech Mono', monospace;
+      --font-body:  'Inter', sans-serif;
+      --font-hud:   'Orbitron', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--body-text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.07) 2px,
+        rgba(0,0,0,0.07) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── BOOT SCREEN ── */
+    #boot {
+      position: fixed;
+      inset: 0;
+      background: var(--black);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      transition: opacity 0.6s ease;
+    }
+
+    #boot.hidden { opacity: 0; pointer-events: none; }
+
+    .boot-terminal {
+      width: 100%;
+      max-width: 680px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--green);
+      line-height: 2;
+    }
+
+    .boot-line { opacity: 0; }
+    .boot-line.show { opacity: 1; }
+
+    .boot-line.dim { color: var(--green-dim); }
+    .boot-line.bright { color: var(--green); font-size: 1rem; }
+    .boot-line.warn { color: #FFB800; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 60px;
+      background: rgba(5, 10, 14, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--green);
+    }
+
+    .nav-logo span { color: var(--muted); }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--green); text-shadow: 0 0 8px var(--green); }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--green);
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      min-height: 100vh;
+      padding: 100px 48px 80px;
+    }
+
+    /* ── INTRO ── */
+    #intro {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .intro-left {}
+
+    /* HUD label */
+    .hud-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--green-dim);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hud-label::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--green-dim);
+    }
+
+    .hero-name {
+      font-family: var(--font-hud);
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      font-weight: 700;
+      color: var(--green);
+      text-shadow: 0 0 30px rgba(57,255,20,0.4);
+      line-height: 1.05;
+      letter-spacing: 0.02em;
+      margin-bottom: 10px;
+    }
+
+    .hero-cursor {
+      display: inline-block;
+      width: 3px;
+      height: 0.8em;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      margin-left: 3px;
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-role {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 32px;
+      letter-spacing: 0.05em;
+    }
+
+    .hero-role strong { color: var(--green); }
+
+    .hero-bio {
+      font-size: 0.95rem;
+      color: var(--body-text);
+      line-height: 1.85;
+      max-width: 480px;
+      margin-bottom: 40px;
+      border-left: 2px solid var(--border);
+      padding-left: 20px;
+    }
+
+    /* Social links */
+    .social-links { display: flex; flex-direction: column; gap: 12px; }
+
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 20px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: var(--surface);
+      color: var(--body-text);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      transition: border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+      width: fit-content;
+      min-width: 260px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .social-btn::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--green);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .social-btn:hover {
+      border-color: var(--green);
+      color: var(--green);
+      box-shadow: 0 0 16px var(--green-glow);
+      transform: translateX(4px);
+    }
+
+    .social-btn:hover::before { opacity: 1; }
+
+    .btn-prefix { color: var(--green-dim); margin-right: 2px; }
+    .btn-arrow  { margin-left: auto; color: var(--green); }
+
+    /* ── RIGHT PANEL ── */
+    .intro-right { display: flex; flex-direction: column; gap: 16px; }
+
+    .hud-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 24px 28px;
+      position: relative;
+    }
+
+    /* corner brackets */
+    .hud-card::before,
+    .hud-card::after {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: var(--green);
+      border-style: solid;
+    }
+
+    .hud-card::before {
+      top: -1px; left: -1px;
+      border-width: 2px 0 0 2px;
+    }
+
+    .hud-card::after {
+      bottom: -1px; right: -1px;
+      border-width: 0 2px 2px 0;
+    }
+
+    .card-title {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--green-dim);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* Clearance badge */
+    .clearance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .clearance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--green-faint);
+      border: 1px solid var(--green-dim);
+      border-radius: 2px;
+      padding: 8px 16px;
+      font-family: var(--font-hud);
+      font-size: 0.75rem;
+      color: var(--green);
+      letter-spacing: 0.1em;
+    }
+
+    .clearance-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .clearance-sub {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* Skills */
+    .skills-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .skill-tag {
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      color: var(--green);
+      background: var(--green-faint);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 4px 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .skill-tag:hover {
+      border-color: var(--green-dim);
+      box-shadow: 0 0 6px var(--green-glow);
+    }
+
+    /* Stats */
+    .stat-row { display: flex; gap: 28px; }
+
+    .stat-num {
+      font-family: var(--font-hud);
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--green);
+      text-shadow: 0 0 12px rgba(57,255,20,0.3);
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── DIVIDER ── */
+    .page-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green-dim), transparent);
+      max-width: 1200px;
+      margin: 0 auto;
+      opacity: 0.4;
+    }
+
+    /* ── PROJECTS ── */
+    #projects { max-width: 1200px; margin: 0 auto; }
+
+    .section-header { margin-bottom: 52px; }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--green-dim);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: var(--font-hud);
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.04em;
+      margin-bottom: 12px;
+      text-shadow: 0 0 20px rgba(57,255,20,0.25);
+    }
+
+    .section-sub {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    /* Projects grid */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      overflow: hidden;
+    }
+
+    .project-card::before {
+      content: attr(data-index);
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--border);
+      letter-spacing: 0.08em;
+    }
+
+    .project-card:hover {
+      border-color: var(--green-dim);
+      box-shadow: 0 0 24px var(--green-glow);
+      transform: translateY(-3px);
+    }
+
+    .project-card:hover .proj-status { color: var(--green); }
+
+    .proj-header { display: flex; align-items: flex-start; gap: 14px; }
+
+    .proj-icon {
+      width: 36px; height: 36px;
+      background: var(--green-faint);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .proj-meta {}
+
+    .proj-name {
+      font-family: var(--font-hud);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+
+    .proj-status {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      transition: color 0.2s;
+    }
+
+    .proj-desc {
+      font-size: 0.88rem;
+      color: var(--body-text);
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    .proj-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .proj-tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--green);
+      background: var(--green-faint);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 3px 9px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-mono {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .footer-mono .g { color: var(--green); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      #intro { grid-template-columns: 1fr; gap: 44px; }
+      nav { padding: 0 20px; }
+      .nav-status { display: none; }
+      section { padding: 88px 20px 60px; }
+      footer { padding: 20px; flex-direction: column; gap: 8px; text-align: center; }
+    }
+
+    @media (max-width: 540px) {
+      .projects-grid { grid-template-columns: 1fr; }
+      .nav-links { gap: 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-cursor { animation: none; opacity: 1; }
+      .status-dot  { animation: none; }
+      #boot { display: none; }
+    }
+
+    /* ── CCA & ACHIEVEMENTS ── */
+    #cca {
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 100px 48px 80px;
+    }
+
+    /* Entry: alternates image left / image right */
+    .cca-entry {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+      margin-bottom: 48px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cca-entry:last-of-type { border-bottom: none; }
+
+    .cca-entry.reverse { direction: rtl; }
+    .cca-entry.reverse > * { direction: ltr; }
+
+    /* Photo slot */
+    .cca-photo-wrap {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .cca-photo-wrap::before,
+    .cca-photo-wrap::after {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+      border-color: var(--green);
+      border-style: solid;
+      z-index: 2;
+    }
+
+    .cca-photo-wrap::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+    .cca-photo-wrap::after  { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+    .cca-photo {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      opacity: 0.88;
+      transition: opacity 0.2s;
+    }
+
+    .cca-photo-wrap:hover .cca-photo { opacity: 1; }
+
+    /* Placeholder when no image yet */
+    .cca-photo-placeholder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: var(--surface2);
+      color: var(--muted);
+    }
+
+    .cca-photo-placeholder svg { opacity: 0.4; }
+
+    .placeholder-text {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+
+    /* Text panel */
+    .cca-text-panel { display: flex; flex-direction: column; gap: 14px; }
+
+    .cca-category {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--green-dim);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cca-category::before {
+      content: '';
+      display: inline-block;
+      width: 16px; height: 1px;
+      background: var(--green-dim);
+    }
+
+    .cca-title {
+      font-family: var(--font-hud);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--green);
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+    }
+
+    .cca-year {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .cca-desc {
+      font-size: 0.9rem;
+      color: var(--body-text);
+      line-height: 1.8;
+      border-left: 2px solid var(--border);
+      padding-left: 16px;
+    }
+
+    /* Extra detail boxes */
+    .cca-details { display: flex; flex-direction: column; gap: 8px; }
+
+    .cca-detail-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--body-text);
+      line-height: 1.6;
+    }
+
+    .cca-detail-box .detail-label {
+      color: var(--green);
+      margin-right: 6px;
+    }
+
+    /* ── PDF RECORDS SECTION ── */
+    .pdf-section {
+      margin-top: 64px;
+      padding-top: 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    .pdf-section-title {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--green-dim);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pdf-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .pdf-thumb-wrap {
+      display: inline-block;
+      position: relative;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      max-width: 320px;
+    }
+
+    .pdf-thumb-wrap:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 24px var(--green-glow);
+      transform: translateY(-3px);
+    }
+
+    .pdf-thumb-img {
+      width: 320px;
+      display: block;
+    }
+
+    /* Placeholder thumbnail */
+    .pdf-placeholder {
+      width: 320px;
+      height: 220px;
+      background: var(--surface2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .pdf-placeholder svg { color: var(--green-dim); }
+
+    .pdf-placeholder-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    .pdf-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5,10,14,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .pdf-thumb-wrap:hover .pdf-overlay { opacity: 1; }
+
+    .pdf-open-btn {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--green);
+      background: var(--surface);
+      border: 1px solid var(--green-dim);
+      border-radius: 2px;
+      padding: 8px 18px;
+      letter-spacing: 0.08em;
+      pointer-events: none;
+    }
+
+    .pdf-caption {
+      margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      max-width: 320px;
+    }
+
+    @media (max-width: 900px) {
+      #cca { padding: 88px 20px 60px; }
+      .cca-entry { grid-template-columns: 1fr; gap: 24px; }
+      .cca-entry.reverse { direction: ltr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── BOOT SCREEN ── -->
+  <div id="boot">
+    <div class="boot-terminal" id="bootLines">
+      <div class="boot-line dim">[  0.000] Initializing secure kernel... OK</div>
+      <div class="boot-line dim">[  0.142] Loading cryptographic modules... OK</div>
+      <div class="boot-line dim">[  0.289] Mounting encrypted filesystem... OK</div>
+      <div class="boot-line warn">[ WARNING ] Unverified connection detected. Running identity check...</div>
+      <div class="boot-line dim">[  1.001] Scanning visitor credentials...</div>
+      <div class="boot-line dim">[  1.340] Cross-referencing threat database... CLEAN</div>
+      <div class="boot-line dim">[  1.589] Firewall rules applied. Audit logging enabled.</div>
+      <div class="boot-line bright">[ ACCESS GRANTED ] Welcome. Loading portfolio...</div>
+    </div>
+  </div>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <span class="nav-logo"><span>root@</span>portfolio:~$</span>
+    <ul class="nav-links">
+      <li><a href="#intro">./about</a></li>
+      <li><a href="#projects">./projects</a></li>
+      <li><a href="#cca">./achievements</a></li>
+    </ul>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      SECURE CONNECTION
+    </div>
+  </nav>
+
+  <!-- ── PAGE 1: INTRO ── -->
+  <section id="intro">
+
+    <div class="intro-left">
+      <p class="hud-label">identity verified · clearance active</p>
+
+      <h1 class="hero-name">
+        YOUR NAME<span class="hero-cursor"></span>
+      </h1>
+
+      <p class="hero-role">
+        <strong>Cybersecurity</strong> student &amp; aspiring ethical hacker
+      </p>
+
+      <p class="hero-bio">
+        Passionate about securing systems and understanding how attacks work in order to defend against them.
+        I'm building a foundation in network security, penetration testing, and cryptography — with a belief
+        that the best defenders think like attackers.
+      </p>
+
+      <div class="social-links">
+        <!-- REPLACE href with your GitHub URL -->
+        <a class="social-btn" href="https://github.com/yourusername" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          <span><span class="btn-prefix">git clone</span> github.com/yourusername</span>
+          <span class="btn-arrow">→</span>
+        </a>
+
+        <!-- REPLACE href with your LinkedIn URL -->
+        <a class="social-btn" href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+            <rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>
+          </svg>
+          <span><span class="btn-prefix">open</span> linkedin.com/in/yourusername</span>
+          <span class="btn-arrow">→</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="intro-right">
+
+      <!-- Clearance card -->
+      <div class="hud-card">
+        <p class="card-title">// operator profile</p>
+        <div class="clearance-row">
+          <div class="clearance-badge">
+            <div class="clearance-dot"></div>
+            CLEARANCE: STUDENT
+          </div>
+          <span class="clearance-sub">Status: ACTIVE LEARNING</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="hud-card">
+        <p class="card-title">// recon data</p>
+        <div class="stat-row">
+          <div>
+            <div class="stat-num">5+</div>
+            <div class="stat-label">Projects</div>
+          </div>
+          <div>
+            <div class="stat-num">2+</div>
+            <div class="stat-label">Yrs Coding</div>
+          </div>
+          <div>
+            <div class="stat-num">0</div>
+            <div class="stat-label">Breaches</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <div class="hud-card">
+        <p class="card-title">// known tools &amp; techniques</p>
+        <div class="skills-grid">
+          <span class="skill-tag">Network Security</span>
+          <span class="skill-tag">Linux</span>
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">Wireshark</span>
+          <span class="skill-tag">Cryptography</span>
+          <span class="skill-tag">CTF</span>
+          <span class="skill-tag">Bash Scripting</span>
+          <span class="skill-tag">OWASP</span>
+          <span class="skill-tag">SQL Injection</span>
+          <span class="skill-tag">Git</span>
+        </div>
+      </div>
+
+      <!-- Currently -->
+      <div class="hud-card">
+        <p class="card-title">// current mission</p>
+        <p style="font-family:var(--font-mono);font-size:0.8rem;color:var(--muted);line-height:2;">
+          <span style="color:var(--green)">▸</span> Applying for Cybersecurity degree programme<br>
+          <span style="color:var(--green)">▸</span> Practicing on TryHackMe / Hack The Box<br>
+          <span style="color:var(--green)">▸</span> Building security-focused personal projects
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="page-divider"></div>
+
+  <!-- ── PAGE 2: PROJECTS ── -->
+  <section id="projects">
+    <div class="section-header">
+      <p class="section-eyebrow">// classified projects · level 1 clearance required</p>
+      <h2 class="section-title">PROJECT FILES</h2>
+      <p class="section-sub">
+        A record of security-relevant builds, tools, and experiments.
+        All source code is open on GitHub — inspect, fork, and improve.
+      </p>
+    </div>
+
+    <div class="projects-grid">
+
+      <!-- PROJECT 1 — replace with your real projects -->
+      <a class="project-card" href="https://github.com/yourusername/project-one" target="_blank" rel="noopener" data-index="[0x01]">
+        <div class="proj-header">
+          <div class="proj-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.6">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div class="proj-meta">
+            <div class="proj-name">PASSWORD MANAGER</div>
+            <div class="proj-status">STATUS: DEPLOYED</div>
+          </div>
+        </div>
+        <p class="proj-desc">
+          A CLI-based password manager using AES-256 encryption. Stores credentials
+          locally in an encrypted vault with a master key derived via PBKDF2. Built
+          to understand symmetric encryption hands-on.
+        </p>
+        <div class="proj-tags">
+          <span class="proj-tag">Python</span>
+          <span class="proj-tag">AES-256</span>
+          <span class="proj-tag">Cryptography</span>
+        </div>
+      </a>
+
+      <!-- PROJECT 2 -->
+      <a class="project-card" href="https://github.com/yourusername/project-two" target="_blank" rel="noopener" data-index="[0x02]">
+        <div class="proj-header">
+          <div class="proj-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.6">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="proj-meta">
+            <div class="proj-name">NETWORK SCANNER</div>
+            <div class="proj-status">STATUS: ACTIVE</div>
+          </div>
+        </div>
+        <p class="proj-desc">
+          A lightweight port scanner written in Python using raw sockets. Identifies
+          open ports, running services, and basic OS fingerprinting on a target host.
+          For authorised testing only.
+        </p>
+        <div class="proj-tags">
+          <span class="proj-tag">Python</span>
+          <span class="proj-tag">Sockets</span>
+          <span class="proj-tag">Networking</span>
+        </div>
+      </a>
+
+      <!-- PROJECT 3 -->
+      <a class="project-card" href="https://github.com/yourusername/project-three" target="_blank" rel="noopener" data-index="[0x03]">
+        <div class="proj-header">
+          <div class="proj-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.6">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="proj-meta">
+            <div class="proj-name">CTF WRITE-UPS</div>
+            <div class="proj-status">STATUS: ONGOING</div>
+          </div>
+        </div>
+        <p class="proj-desc">
+          A growing repository of Capture The Flag solutions from platforms like
+          TryHackMe and PicoCTF. Documents my methodology for web exploitation,
+          reverse engineering, and forensics challenges.
+        </p>
+        <div class="proj-tags">
+          <span class="proj-tag">CTF</span>
+          <span class="proj-tag">Web Exploitation</span>
+          <span class="proj-tag">Forensics</span>
+        </div>
+      </a>
+
+      <!-- PROJECT 4 -->
+      <a class="project-card" href="https://github.com/yourusername/project-four" target="_blank" rel="noopener" data-index="[0x04]">
+        <div class="proj-header">
+          <div class="proj-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#39FF14" stroke-width="1.6">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </div>
+          <div class="proj-meta">
+            <div class="proj-name">PHISHING DETECTOR</div>
+            <div class="proj-status">STATUS: PROTOTYPE</div>
+          </div>
+        </div>
+        <p class="proj-desc">
+          A browser extension that analyses URLs in real time against known phishing
+          indicators — suspicious TLDs, typosquatted domains, and missing HTTPS.
+          Flags threats before users click.
+        </p>
+        <div class="proj-tags">
+          <span class="proj-tag">JavaScript</span>
+          <span class="proj-tag">Browser Extension</span>
+          <span class="proj-tag">OSINT</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <div class="page-divider"></div>
+
+  <!-- ── PAGE 3: CCA & ACHIEVEMENTS ── -->
+  <section id="cca">
+    <div class="section-header">
+      <p class="section-eyebrow">// personal dossier · co-curricular &amp; awards</p>
+      <h2 class="section-title">CCA &amp; ACHIEVEMENTS</h2>
+      <p class="section-sub">
+        A record of co-curricular activities, competitions, and milestones
+        outside the classroom. Every entry is part of who I am as a person and a professional.
+      </p>
+    </div>
+
+    <!-- ENTRY 1 — image left -->
+    <div class="cca-entry">
+      <div class="cca-photo-wrap">
+        <!-- REPLACE src with your photo path e.g. src="images/cca1.jpg" -->
+        <div class="cca-photo-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span class="placeholder-text">Replace with your photo</span>
+        </div>
+      </div>
+      <div class="cca-text-panel">
+        <span class="cca-category">Co-Curricular Activity</span>
+        <h3 class="cca-title">CCA NAME — e.g. Infocomm Club</h3>
+        <span class="cca-year">▸ 20XX – 20XX</span>
+        <p class="cca-desc">
+          Describe what this CCA involved — your role, what you contributed, and what you
+          took away from it. This is your chance to show personality and commitment beyond grades.
+        </p>
+        <div class="cca-details">
+          <div class="cca-detail-box"><span class="detail-label">ROLE:</span> Replace with your role (e.g. Vice-President)</div>
+          <div class="cca-detail-box"><span class="detail-label">KEY ACHIEVEMENT:</span> Describe a specific achievement or project you led or participated in.</div>
+          <div class="cca-detail-box"><span class="detail-label">SKILLS GAINED:</span> Leadership, teamwork, public speaking, etc.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY 2 — image right -->
+    <div class="cca-entry reverse">
+      <div class="cca-photo-wrap">
+        <div class="cca-photo-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span class="placeholder-text">Replace with your photo</span>
+        </div>
+      </div>
+      <div class="cca-text-panel">
+        <span class="cca-category">Award / Competition</span>
+        <h3 class="cca-title">ACHIEVEMENT NAME — e.g. National Cybersecurity Competition</h3>
+        <span class="cca-year">▸ 20XX</span>
+        <p class="cca-desc">
+          Describe this award or competition — what it was, how you qualified, and
+          what placing or recognition you received. Be specific about the challenge and your result.
+        </p>
+        <div class="cca-details">
+          <div class="cca-detail-box"><span class="detail-label">RESULT:</span> e.g. Top 10 Finalist / Gold Award / 1st Place</div>
+          <div class="cca-detail-box"><span class="detail-label">ORGANISED BY:</span> e.g. Ministry of Education / IMDA</div>
+          <div class="cca-detail-box"><span class="detail-label">WHAT I DID:</span> Brief description of your specific contribution or task.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY 3 — image left -->
+    <div class="cca-entry">
+      <div class="cca-photo-wrap">
+        <div class="cca-photo-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span class="placeholder-text">Replace with your photo</span>
+        </div>
+      </div>
+      <div class="cca-text-panel">
+        <span class="cca-category">Leadership / Service</span>
+        <h3 class="cca-title">ROLE NAME — e.g. Class Chairperson / Peer Mentor</h3>
+        <span class="cca-year">▸ 20XX – 20XX</span>
+        <p class="cca-desc">
+          Describe this leadership or service role. What responsibilities did you hold?
+          How did you support others? What did this teach you about yourself?
+        </p>
+        <div class="cca-details">
+          <div class="cca-detail-box"><span class="detail-label">SCOPE:</span> e.g. Managed a team of 12 students across 3 events.</div>
+          <div class="cca-detail-box"><span class="detail-label">IMPACT:</span> What changed or improved because of your involvement?</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY 4 — image right -->
+    <div class="cca-entry reverse">
+      <div class="cca-photo-wrap">
+        <div class="cca-photo-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span class="placeholder-text">Replace with your photo</span>
+        </div>
+      </div>
+      <div class="cca-text-panel">
+        <span class="cca-category">Certification / Course</span>
+        <h3 class="cca-title">CERT NAME — e.g. Google Cybersecurity Certificate</h3>
+        <span class="cca-year">▸ 20XX</span>
+        <p class="cca-desc">
+          Describe this certification or self-directed course. What did it cover and why
+          did you pursue it? Connecting it to your cybersecurity ambitions adds real weight here.
+        </p>
+        <div class="cca-details">
+          <div class="cca-detail-box"><span class="detail-label">ISSUED BY:</span> e.g. Google / Coursera / CompTIA</div>
+          <div class="cca-detail-box"><span class="detail-label">TOPICS COVERED:</span> e.g. Network defence, threat detection, SIEM tools.</div>
+          <div class="cca-detail-box"><span class="detail-label">CREDENTIAL ID:</span> Optional — add your cert ID or verification link.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY 5 — image left -->
+    <div class="cca-entry">
+      <div class="cca-photo-wrap">
+        <div class="cca-photo-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span class="placeholder-text">Replace with your photo</span>
+        </div>
+      </div>
+      <div class="cca-text-panel">
+        <span class="cca-category">Community / Volunteer Work</span>
+        <h3 class="cca-title">ACTIVITY NAME — e.g. Tech Volunteering at Senior Centre</h3>
+        <span class="cca-year">▸ 20XX</span>
+        <p class="cca-desc">
+          Describe the volunteer work or community initiative. Who did you help, what did
+          you do, and why does it matter to you? Admissions officers value genuine service.
+        </p>
+        <div class="cca-details">
+          <div class="cca-detail-box"><span class="detail-label">HOURS CONTRIBUTED:</span> e.g. 40+ volunteer hours over 3 months.</div>
+          <div class="cca-detail-box"><span class="detail-label">WHAT I TAUGHT / DID:</span> e.g. Helped seniors learn basic cyber hygiene and safe browsing.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENTRY 6 — image right -->
+    <div class="cca-entry reverse">
+      <div class="cca-photo-wrap">
+        <div class="cca-photo-placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span class="placeholder-text">Replace with your photo</span>
+        </div>
+      </div>
+      <div class="cca-text-panel">
+        <span class="cca-category">Sport / Uniformed Group</span>
+        <h3 class="cca-title">GROUP NAME — e.g. National Police Cadet Corps / Basketball</h3>
+        <span class="cca-year">▸ 20XX – 20XX</span>
+        <p class="cca-desc">
+          Describe your involvement — what the group stands for, what you trained in,
+          and what ranks or milestones you reached. Physical or uniformed activities show
+          discipline and resilience.
+        </p>
+        <div class="cca-details">
+          <div class="cca-detail-box"><span class="detail-label">RANK / LEVEL ATTAINED:</span> e.g. Sergeant / Gold Award</div>
+          <div class="cca-detail-box"><span class="detail-label">KEY EXPERIENCE:</span> e.g. Led a drill team of 20 cadets for National Day Parade.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PDF RECORDS ── -->
+    <div class="pdf-section">
+      <p class="pdf-section-title">// official cca records · click to open</p>
+
+      <!-- REPLACE href with path to your PDF file e.g. href="records/cca-records.pdf" -->
+      <!-- REPLACE the placeholder div with: <img class="pdf-thumb-img" src="images/cca-records-preview.png" alt="CCA Records Preview"> -->
+      <a class="pdf-thumb-wrap" href="YOUR-PDF-FILE.pdf" target="_blank" rel="noopener" title="Open CCA Records PDF">
+        <div class="pdf-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span class="pdf-placeholder-label">
+            Replace with a screenshot<br>of your CCA records PDF
+          </span>
+        </div>
+        <div class="pdf-overlay">
+          <span class="pdf-open-btn">▸ OPEN PDF RECORD</span>
+        </div>
+      </a>
+      <p class="pdf-caption">
+        Official CCA records document — click to view full PDF
+      </p>
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-mono">
+      <span class="g">$</span> echo "All activity logged. Stay ethical."
+    </span>
+    <span class="footer-mono">
+      <span class="g">[SECURE]</span> yourusername · 2025
+    </span>
+  </footer>
+
+  <!-- ── BOOT ANIMATION ── -->
+  <script>
+    const lines = document.querySelectorAll('.boot-line');
+    let i = 0;
+
+    function showNext() {
+      if (i < lines.length) {
+        lines[i].classList.add('show');
+        i++;
+        const delay = lines[i - 1].classList.contains('warn') ? 600
+                    : lines[i - 1].classList.contains('bright') ? 500 : 260;
+        setTimeout(showNext, delay);
+      } else {
+        setTimeout(() => {
+          document.getElementById('boot').classList.add('hidden');
+          setTimeout(() => {
+            document.getElementById('boot').style.display = 'none';
+          }, 650);
+        }, 900);
+      }
+    }
+
+    setTimeout(showNext, 300);
+  </script>
+
+</body>
+</html>
